@@ -18,6 +18,8 @@ const SYSCTL        = scripting.addModule("/ti/driverlib/SYSCTL");
 const TIMER         = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 const TIMER1        = TIMER.addInstance();
 const TIMER2        = TIMER.addInstance();
+const ADC12         = scripting.addModule("/ti/driverlib/ADC12", {}, false);
+const ADC121        = ADC12.addInstance();
 const UART          = scripting.addModule("/ti/driverlib/UART", {}, false);
 const UART1         = UART.addInstance();
 const VREF          = scripting.addModule("/ti/driverlib/VREF");
@@ -59,6 +61,17 @@ DAC12.sub0ChanID      = 2;
 DAC12.dacSampleTimerEn  = false;
 DAC12.dacEnabledInterrupts = ["FIFO_TWO_QTRS_EMPTY"];
 
+ADC121.$name                      = "ADC12_0";
+ADC121.sampClkSrc                 = "DL_ADC12_CLOCK_ULPCLK";
+ADC121.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_8";
+ADC121.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_2";
+ADC121.adcMem0vref                = "VREF";
+ADC121.sampleTime0                = "125 us";
+ADC121.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
+ADC121.enabledInterrupts          = ["DL_ADC12_INTERRUPT_MEM0_RESULT_LOADED"];
+ADC121.peripheral.$assign         = "ADC0";
+ADC121.peripheral.adcPin2.$assign = "PA25";
+
 VREF.basicIntVolt   = "DL_VREF_BUFCONFIG_OUTPUT_2_5V";
 VREF.checkVREFReady = true;
 
@@ -88,10 +101,12 @@ UART1.enabledInterrupts        = ["RX"];
 UART1.peripheral.$assign       = "UART0";
 UART1.peripheral.rxPin.$assign = "PA11";
 UART1.peripheral.txPin.$assign = "PA10";
-UART1.txPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric0";
-UART1.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric1";
+UART1.txPinConfig.$name        = "UART_TX";
+UART1.rxPinConfig.$name        = "UART_RX";
 
-VREF.vrefPosPinConfig.$name = "ti_driverlib_gpio_GPIOPinGeneric2";
+ADC121.adcPin2Config.$name     = "ADC_CH2";
+
+VREF.vrefPosPinConfig.$name    = "VREF_POS";
 
 ProjectConfig.genLibCMSIS = true;
 

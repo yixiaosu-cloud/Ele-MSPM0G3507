@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "uart.h"
 #include "dac.h"
+#include "adc.h"
 
 static volatile int32_t g_tick;
 
@@ -27,6 +28,7 @@ int main(void)
 
 	NVIC_EnableIRQ(TIMER_0_INST_INT_IRQN);
 	NVIC_EnableIRQ(UART_0_INST_INT_IRQN);
+	NVIC_EnableIRQ(ADC12_0_INST_INT_IRQN);
 
 	DL_GPIO_clearPins(GPIOA, LED_LED1_PIN);
 	// DL_GPIO_setPins(GPIOB, LED_BLUE_PIN);
@@ -37,7 +39,8 @@ int main(void)
 	UART_println("PA10=TX, PA11=RX, 9600-8N1");
 
 	// DSP_Demo();
-	DAC_Demo();
+	ADC_Demo();
+	// DAC_Demo();
 
 	while (1) {
 		if (Key_Read()) {
