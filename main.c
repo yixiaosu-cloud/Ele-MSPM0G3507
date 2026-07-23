@@ -5,6 +5,7 @@
 
 #include "utils.h"
 #include "uart.h"
+#include "dac.h"
 
 static volatile int32_t g_tick;
 
@@ -28,14 +29,15 @@ int main(void)
 	NVIC_EnableIRQ(UART_0_INST_INT_IRQN);
 
 	DL_GPIO_clearPins(GPIOA, LED_LED1_PIN);
-	DL_GPIO_setPins(GPIOB, LED_BLUE_PIN);
+	// DL_GPIO_setPins(GPIOB, LED_BLUE_PIN);
 
 	DL_TimerG_startCounter(TIMER_0_INST);
 
 	UART_println("=== MSPM0G3507 UART Debug ===");
 	UART_println("PA10=TX, PA11=RX, 9600-8N1");
 
-	DSP_Demo();
+	// DSP_Demo();
+	DAC_Demo();
 
 	while (1) {
 		if (Key_Read()) {
