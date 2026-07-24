@@ -25,8 +25,10 @@
 - `main.syscfg` — 硬件配置入口，通过 SysConfig GUI 或直接编辑
 - `User/` — 用户模块目录
   - `utils.h/c` — 延时、按键消抖、DSP 演示
-  - `uart.h/c` — UART0 串口调试（输出 + echo ISR）
-  - `uart1.h/c` — UART1 串口打印（输出 + echo ISR）
+  - `uart.h/c` — UART0 串口调试（输出 + DMA TX + echo ISR）
+  - `uart1.h/c` — UART1 串口驱动（输出 + DMA TX + RX callback ISR）
+  - `tjc_usart_hmi.h/c` — 淘晶驰 TJC 串口屏驱动（命令累积 DMA 发送 + ringbuf 帧解析）
+  - `app_screen.h/c` — 串口屏应用逻辑（波形绘制、触摸事件回调）
   - `dac.h/c` — DAC12 DDS 正弦波发生器 + ISR
   - `adc.h/c` — ADC12 采样 + 批量采集 + ISR
 - `ti/driverlib/` — SDK 驱动库源文件 (符号链接)
@@ -39,8 +41,8 @@
 |------|------|------|------|
 | `TIMER_0_INST_IRQHandler` | TIMG0 | main.c | GREEN LED 闪烁 |
 | `TIMER_2_INST_IRQHandler` | TIMG12 | User/adc.c | 启动 ADC 转换 |
-| `UART_0_INST_IRQHandler` | UART0 | User/uart.c | RX echo |
-| `UART_1_INST_IRQHandler` | UART1 | User/uart1.c | RX echo |
+| `UART_0_INST_IRQHandler` | UART0 | User/uart.c | RX echo + DMA done |
+| `UART_1_INST_IRQHandler` | UART1 | User/uart1.c | RX→callback (tjc ringbuf) + DMA done |
 | `ADC12_0_INST_IRQHandler` | ADC0 | User/adc.c | 存储采样结果 |
 | `DAC12_IRQHandler` | DAC0 | User/dac.c | 填充 FIFO |
 
@@ -67,6 +69,7 @@
 #include "ti_msp_dl_config.h"
 #include <ti/driverlib/driverlib.h>
 #include "User/uart.h"
+#include "User/uart1.h"
 #include "User/utils.h"
 // ...
 ```
@@ -85,6 +88,15 @@ DL_GPIO_setPins(GPIOA, LED_LED1_PIN);       // 置高
 DL_GPIO_clearPins(GPIOA, LED_LED1_PIN);     // 置低
 DL_GPIO_togglePins(GPIOA, LED_LED1_PIN);    // 翻转
 uint32_t v = DL_GPIO_readPins(GPIOB, KEY_S2_PIN); // 读取 (返回引脚掩码或 0)
+```
+
+## DMA 常用 API
+
+```c
+DL_DMA_setSrcAddr(DMA, DMA_CH0_CHAN_ID, (uint32_t)buf);
+DL_DMA_setDestAddr(DMA, DMA_CH0_CHAN_ID, (uint32_t)(&UART_0_INST->TXDATA));
+DL_DMA_setTransferSize(DMA, DMA_CH0_CHAN_ID, len);
+DL_DMA_enableChannel(DMA, DMA_CH0_CHAN_ID);
 ```
 
 ## 延时
@@ -111,3 +123,10 @@ uint32_t v = DL_GPIO_readPins(GPIOB, KEY_S2_PIN); // 读取 (返回引脚掩码�
 | TIMER_0 | TIMG0 | LFCLK/9 | 1 s | 1 | 心跳 LED |
 | TIMER_1 | TIMG6 | BUSCLK | 1 μs | 2 | DAC 触发 |
 | TIMER_2 | TIMG12 | BUSCLK | 10 μs | 3 | ADC 采集触发 |
+
+## DMA 分布
+
+| 通道 | 外设 | 方向 | 用途 |
+|:---:|------|------|------|
+| DMA_CH0 | UART0 TX | BUF→FIFO | 串口调试 DMA 发送 |
+| DMA_CH1 | UART1 TX | BUF→FIFO | 串口屏命令 DMA 发送 |

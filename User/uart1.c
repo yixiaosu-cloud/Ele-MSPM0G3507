@@ -3,8 +3,9 @@
 #include <ti/driverlib/driverlib.h>
 #include <ti/driverlib/dl_dma.h>
 
-static volatile bool g_uart1_dma_done;
-static volatile bool g_uart1_tx_complete;
+static volatile bool g_uart1_dma_done = true;
+static volatile bool g_uart1_tx_complete = true;
+static void (*g_uart1_rx_cb)(uint8_t) = NULL;
 
 void UART1_putchar(char c)
 {
@@ -86,12 +87,19 @@ void UART1_DMA_waitDone(void)
 	}
 }
 
+void UART1_RX_setCallback(void (*cb)(uint8_t))
+{
+	g_uart1_rx_cb = cb;
+}
+
 void UART_1_INST_IRQHandler(void)
 {
 	switch (DL_UART_Main_getPendingInterrupt(UART_1_INST)) {
 	case DL_UART_MAIN_IIDX_RX:
-		DL_UART_Main_transmitData(UART_1_INST,
-			DL_UART_Main_receiveData(UART_1_INST));
+		if (g_uart1_rx_cb) {
+			g_uart1_rx_cb((uint8_t)DL_UART_Main_receiveData(
+				UART_1_INST));
+		}
 		break;
 	case DL_UART_MAIN_IIDX_DMA_DONE_TX:
 		g_uart1_dma_done = true;

@@ -14,4 +14,6 @@ bool UART1_DMA_send(const uint8_t *buf, uint16_t len);
 bool UART1_DMA_isBusy(void);
 void UART1_DMA_waitDone(void);
 
+void UART1_RX_setCallback(void (*cb)(uint8_t));
+
 #endif
