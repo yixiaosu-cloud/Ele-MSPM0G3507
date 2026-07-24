@@ -25,7 +25,8 @@
 - `main.syscfg` — 硬件配置入口，通过 SysConfig GUI 或直接编辑
 - `User/` — 用户模块目录
   - `utils.h/c` — 延时、按键消抖、DSP 演示
-  - `uart.h/c` — 串口调试（输出 + echo ISR）
+  - `uart.h/c` — UART0 串口调试（输出 + echo ISR）
+  - `uart1.h/c` — UART1 串口打印（输出 + echo ISR）
   - `dac.h/c` — DAC12 DDS 正弦波发生器 + ISR
   - `adc.h/c` — ADC12 采样 + 批量采集 + ISR
 - `ti/driverlib/` — SDK 驱动库源文件 (符号链接)
@@ -39,6 +40,7 @@
 | `TIMER_0_INST_IRQHandler` | TIMG0 | main.c | GREEN LED 闪烁 |
 | `TIMER_2_INST_IRQHandler` | TIMG12 | User/adc.c | 启动 ADC 转换 |
 | `UART_0_INST_IRQHandler` | UART0 | User/uart.c | RX echo |
+| `UART_1_INST_IRQHandler` | UART1 | User/uart1.c | RX echo |
 | `ADC12_0_INST_IRQHandler` | ADC0 | User/adc.c | 存储采样结果 |
 | `DAC12_IRQHandler` | DAC0 | User/dac.c | 填充 FIFO |
 
@@ -53,6 +55,8 @@
 | KEY S2 | PB21 | `KEY_S2_PIN` (内部上拉) |
 | UART TX | PA10 | `GPIO_UART_0_TX_PIN` |
 | UART RX | PA11 | `GPIO_UART_0_RX_PIN` |
+| UART1 TX (屏) | PB6 | `GPIO_UART_1_TX_PIN` |
+| UART1 RX (屏) | PB7 | `GPIO_UART_1_RX_PIN` |
 | DAC OUT | PA15 | `GPIO_DAC12_OUT_PIN` |
 | ADC CH2 | PA25 | `GPIO_ADC12_0_C2_PIN` |
 

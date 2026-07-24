@@ -11,6 +11,8 @@
 | PA19 | DEBUGSS | SWDIO | 调试数据线 |
 | PA20 | DEBUGSS | SWCLK | 调试时钟线 |
 | PA25 | ADC0 | CH2 | ADC 采样输入 (0~VREF) |
+| PB6 | UART1 | TX | 串口发送 (接外部设备/串口屏) |
+| PB7 | UART1 | RX | 串口接收 (接外部设备/串口屏) |
 | PB21 | GPIO | KEY S2 | 用户按键 (内部上拉) |
 | PB22 | GPIO | BLUE | RGB 蓝色 LED |
 | PB26 | GPIO | RED | RGB 红色 LED |
@@ -23,8 +25,8 @@
 | 时钟源 | 频率 | 用途 |
 |--------|------|------|
 | CPUCLK (SYSOSC) | 32 MHz | 系统主时钟 |
-| LFCLK | 32768 Hz | UART 波特率、TIMG0 |
-| BUSCLK | 32 MHz | TIMG6 (DAC 触发)、TIMG12 (ADC 触发) |
+| LFCLK | 32768 Hz | UART0 波特率、TIMG0 |
+| BUSCLK | 32 MHz | TIMG6 (DAC 触发)、TIMG12 (ADC 触发)、UART1 波特率 |
 | MFPCLK | 32 MHz | VREF、DAC12 |
 | ULPCLK ÷ 8 | 4 MHz | ADC12 采样时钟 |
 
@@ -70,6 +72,8 @@
 
 ### UART
 
+#### UART0 (调试串口)
+
 | 参数 | 值 |
 |------|-----|
 | 外设 | UART0 |
@@ -77,7 +81,27 @@
 | 波特率 | 9600 |
 | 过采样 | 3x |
 | 数据位 | 8 |
+| FIFO | 开启 |
+| TX DMA | DMA_CH0, Buffer→FIFO |
+| 中断 | RX, DMA_DONE_TX, EOT_DONE |
+
+#### UART1 (通用串口)
+
+| 参数 | 值 |
+|------|-----|
+| 外设 | UART1 |
+| 时钟 | BUSCLK |
+| 波特率 | 115200 |
+| 过采样 | 16x |
+| 数据位 | 8 |
+| FIFO | 开启 |
 | 中断 | RX |
+
+### DMA
+
+| 通道 | 外设 | 方向 | 模式 |
+|:---:|------|------|------|
+| DMA_CH0 | UART0 TX | Buffer → FIFO (b2f) | 单次传输 |
 
 ### VREF
 

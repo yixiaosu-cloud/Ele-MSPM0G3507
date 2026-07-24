@@ -9,8 +9,11 @@
 /**
  * Import the modules used in this configuration.
  */
+const ADC12         = scripting.addModule("/ti/driverlib/ADC12", {}, false);
+const ADC121        = ADC12.addInstance();
 const Board         = scripting.addModule("/ti/driverlib/Board");
 const DAC12         = scripting.addModule("/ti/driverlib/DAC12");
+const DMA           = scripting.addModule("/ti/driverlib/DMA");
 const GPIO          = scripting.addModule("/ti/driverlib/GPIO", {}, false);
 const GPIO1         = GPIO.addInstance();
 const GPIO2         = GPIO.addInstance();
@@ -18,10 +21,9 @@ const SYSCTL        = scripting.addModule("/ti/driverlib/SYSCTL");
 const TIMER         = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 const TIMER1        = TIMER.addInstance();
 const TIMER2        = TIMER.addInstance();
-const ADC12         = scripting.addModule("/ti/driverlib/ADC12", {}, false);
-const ADC121        = ADC12.addInstance();
 const UART          = scripting.addModule("/ti/driverlib/UART", {}, false);
 const UART1         = UART.addInstance();
+const UART2         = UART.addInstance();
 const VREF          = scripting.addModule("/ti/driverlib/VREF");
 const ProjectConfig = scripting.addModule("/ti/project_config/ProjectConfig");
 
@@ -31,7 +33,29 @@ const ProjectConfig = scripting.addModule("/ti/project_config/ProjectConfig");
 const gate8  = system.clockTree["MFPCLKGATE"];
 gate8.enable = true;
 
+ADC121.$name                      = "ADC12_0";
+ADC121.sampClkSrc                 = "DL_ADC12_CLOCK_ULPCLK";
+ADC121.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_8";
+ADC121.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_2";
+ADC121.adcMem0vref                = "VREF";
+ADC121.sampleTime0                = "125 us";
+ADC121.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
+ADC121.enabledInterrupts          = ["DL_ADC12_INTERRUPT_MEM0_RESULT_LOADED"];
+ADC121.peripheral.$assign         = "ADC0";
+ADC121.peripheral.adcPin2.$assign = "PA25";
+ADC121.adcPin2Config.$name        = "ADC_CH2";
 
+
+DAC12.dacOutputPinEn       = true;
+DAC12.dacAmplifier         = "ON";
+DAC12.dacPosVREF           = "VEREFP";
+DAC12.dacNegVREF           = "VEREFN";
+DAC12.dacFIFOEn            = true;
+DAC12.dacFIFOTrigger       = "HWTRIG0";
+DAC12.sub0ChanID           = 2;
+DAC12.dacSampleTimerEn     = false;
+DAC12.dacEnabledInterrupts = ["FIFO_TWO_QTRS_EMPTY"];
+DAC12.OutPinConfig.$name   = "ti_driverlib_gpio_GPIOPinGeneric4";
 
 GPIO1.$name                               = "LED";
 GPIO1.associatedPins.create(4);
@@ -51,30 +75,6 @@ GPIO2.associatedPins[0].$name             = "S2";
 
 SYSCTL.MFPCLKEn = true;
 
-DAC12.dacOutputPinEn  = true;
-DAC12.dacAmplifier    = "ON";
-DAC12.dacPosVREF      = "VEREFP";
-DAC12.dacNegVREF      = "VEREFN";
-DAC12.dacFIFOEn       = true;
-DAC12.dacFIFOTrigger  = "HWTRIG0";
-DAC12.sub0ChanID      = 2;
-DAC12.dacSampleTimerEn  = false;
-DAC12.dacEnabledInterrupts = ["FIFO_TWO_QTRS_EMPTY"];
-
-ADC121.$name                      = "ADC12_0";
-ADC121.sampClkSrc                 = "DL_ADC12_CLOCK_ULPCLK";
-ADC121.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_8";
-ADC121.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_2";
-ADC121.adcMem0vref                = "VREF";
-ADC121.sampleTime0                = "125 us";
-ADC121.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
-ADC121.enabledInterrupts          = ["DL_ADC12_INTERRUPT_MEM0_RESULT_LOADED"];
-ADC121.peripheral.$assign         = "ADC0";
-ADC121.peripheral.adcPin2.$assign = "PA25";
-
-VREF.basicIntVolt   = "DL_VREF_BUFCONFIG_OUTPUT_2_5V";
-VREF.checkVREFReady = true;
-
 TIMER1.$name                       = "TIMER_0";
 TIMER1.timerClkSrc                 = "LFCLK";
 TIMER1.timerClkPrescale            = 8;
@@ -86,8 +86,6 @@ TIMER1.event1ControllerInterruptEn = ["ZERO_EVENT"];
 TIMER1.peripheral.$assign          = "TIMG0";
 
 TIMER2.$name                       = "TIMER_1";
-TIMER2.timerClkSrc                 = "BUSCLK";
-TIMER2.timerClkPrescale            = 1;
 TIMER2.timerPeriod                 = "1 us";
 TIMER2.timerMode                   = "PERIODIC";
 TIMER2.event1PublisherChannel      = 2;
@@ -95,18 +93,49 @@ TIMER2.event1ControllerInterruptEn = ["ZERO_EVENT"];
 TIMER2.peripheral.$assign          = "TIMG6";
 
 UART1.$name                    = "UART_0";
-UART1.uartClkSrc               = "LFCLK";
-UART1.ovsRate                  = "3";
-UART1.enabledInterrupts        = ["RX"];
+UART1.uartClkSrc               = "BUSCLK";
+UART1.ovsRate                  = "16";
+UART1.targetBaudRate           = 115200;
+UART1.enabledInterrupts        = ["RX", "DMA_DONE_TX", "EOT_DONE"];
+UART1.enableFIFO               = true;
+UART1.txFifoThreshold          = "DL_UART_TX_FIFO_LEVEL_ONE_ENTRY";
+UART1.enabledDMATXTriggers     = "DL_UART_DMA_INTERRUPT_TX";
+UART1.enableDMATX              = true;
+UART1.DMA_CHANNEL_TX.$name              = "DMA_CH0";
+UART1.DMA_CHANNEL_TX.addressMode        = "b2f";
+UART1.DMA_CHANNEL_TX.srcIncDec          = "INCREMENT";
+UART1.DMA_CHANNEL_TX.srcLength          = "BYTE";
+UART1.DMA_CHANNEL_TX.dstLength          = "BYTE";
+UART1.DMA_CHANNEL_TX.peripheral.$assign = "DMA_CH0";
 UART1.peripheral.$assign       = "UART0";
 UART1.peripheral.rxPin.$assign = "PA11";
 UART1.peripheral.txPin.$assign = "PA10";
 UART1.txPinConfig.$name        = "UART_TX";
 UART1.rxPinConfig.$name        = "UART_RX";
 
-ADC121.adcPin2Config.$name     = "ADC_CH2";
+UART2.$name                             = "UART_1";
+UART2.targetBaudRate                    = 115200;
+UART2.enableInternalLoopback            = false;
+UART2.enableFIFO                        = true;
+UART2.txFifoThreshold                   = "DL_UART_TX_FIFO_LEVEL_ONE_ENTRY";
+UART2.enabledInterrupts                 = ["DMA_DONE_TX","EOT_DONE","RX"];
+UART2.enabledDMATXTriggers              = "DL_UART_DMA_INTERRUPT_TX";
+UART2.enableDMATX                       = true;
+UART2.DMA_CHANNEL_TX.$name              = "DMA_CH1";
+UART2.DMA_CHANNEL_TX.addressMode        = "b2f";
+UART2.DMA_CHANNEL_TX.srcIncDec          = "INCREMENT";
+UART2.DMA_CHANNEL_TX.srcLength          = "BYTE";
+UART2.DMA_CHANNEL_TX.dstLength          = "BYTE";
+UART2.DMA_CHANNEL_TX.peripheral.$assign = "DMA_CH1";
+UART2.peripheral.$assign                = "UART1";
+UART2.peripheral.rxPin.$assign          = "PB7";
+UART2.peripheral.txPin.$assign          = "PB6";
+UART2.txPinConfig.$name                 = "ti_driverlib_gpio_GPIOPinGeneric0";
+UART2.rxPinConfig.$name                 = "ti_driverlib_gpio_GPIOPinGeneric1";
 
-VREF.vrefPosPinConfig.$name    = "VREF_POS";
+VREF.basicIntVolt           = "DL_VREF_BUFCONFIG_OUTPUT_2_5V";
+VREF.checkVREFReady         = true;
+VREF.vrefPosPinConfig.$name = "VREF_POS";
 
 ProjectConfig.genLibCMSIS = true;
 
@@ -118,9 +147,13 @@ ProjectConfig.genLibCMSIS = true;
 Board.peripheral.$suggestSolution            = "DEBUGSS";
 Board.peripheral.swclkPin.$suggestSolution   = "PA20";
 Board.peripheral.swdioPin.$suggestSolution   = "PA19";
+DAC12.peripheral.$suggestSolution            = "DAC0";
+DAC12.peripheral.OutPin.$suggestSolution     = "PA15";
 GPIO1.associatedPins[0].pin.$suggestSolution = "PB26";
 GPIO1.associatedPins[1].pin.$suggestSolution = "PB27";
 GPIO1.associatedPins[2].pin.$suggestSolution = "PB22";
 GPIO1.associatedPins[3].pin.$suggestSolution = "PA0";
 GPIO2.associatedPins[0].pin.$suggestSolution = "PB21";
 SYSCTL.peripheral.$suggestSolution           = "SYSCTL";
+VREF.peripheral.$suggestSolution             = "VREF";
+VREF.peripheral.vrefPosPin.$suggestSolution  = "PA23";
