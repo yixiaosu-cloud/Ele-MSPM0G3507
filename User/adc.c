@@ -16,6 +16,7 @@ uint16_t ADC_ReadRaw(void)
 	g_adc_done = 0;
 	while (!g_adc_done) {
 	}
+	DL_ADC12_enableConversions(ADC12_0_INST);
 	return g_adc_raw;
 }
 

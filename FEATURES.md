@@ -3,12 +3,12 @@
 ## 源码结构
 
 ```
-main.c       — 主循环入口 + TIMER_0 ISR (GREEN LED 闪烁)
-main.syscfg  — SysConfig 硬件配置
-uart.h/c     — 串口调试（输出 + echo ISR）
-utils.h/c    — 基础工具（延时、按键消抖、DSP 演示）
-dac.h/c      — DAC12 DDS 正弦波发生器
-adc.h/c      — ADC12 采样读取
+main.c          — 主循环入口 + TIMER_0 ISR (GREEN LED 闪烁)
+main.syscfg     — SysConfig 硬件配置
+User/uart.h/c   — 串口调试（输出 + echo ISR）
+User/utils.h/c  — 基础工具（延时、按键消抖、DSP 演示）
+User/dac.h/c    — DAC12 DDS 正弦波发生器
+User/adc.h/c    — ADC12 采样读取
 ```
 
 ## 模块 API
