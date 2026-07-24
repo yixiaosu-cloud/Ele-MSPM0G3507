@@ -24,7 +24,7 @@
 |--------|------|------|
 | CPUCLK (SYSOSC) | 32 MHz | 系统主时钟 |
 | LFCLK | 32768 Hz | UART 波特率、TIMG0 |
-| BUSCLK | 32 MHz | TIMG6 (DAC 触发) |
+| BUSCLK | 32 MHz | TIMG6 (DAC 触发)、TIMG12 (ADC 触发) |
 | MFPCLK | 32 MHz | VREF、DAC12 |
 | ULPCLK ÷ 8 | 4 MHz | ADC12 采样时钟 |
 
@@ -34,6 +34,7 @@
 |------|------|------|------|------|:---:|------|
 | TIMER_0 | TIMG0 | LFCLK/9 | 1000 ms | 周期性 | 1 | GREEN LED 闪烁 + 事件发布 |
 | TIMER_1 | TIMG6 | BUSCLK | 1 μs | 周期性 | 2 | DAC 硬件触发 (1 Msps) |
+| TIMER_2 | TIMG12 | BUSCLK | 10 μs | 周期性 | 3 | ADC 采样触发 (100 ksps) |
 
 ### 事件总线路由
 
@@ -41,6 +42,7 @@
 |--------|:---:|------|--------|
 | TIMG0 | 1 | ZERO | (预留，ADC/DMA 可用) |
 | TIMG6 | 2 | ZERO | DAC12 HWTRIG0 |
+| TIMG12 | 3 | ZERO | (预留) |
 
 ### ADC12
 
@@ -50,7 +52,8 @@
 | 通道 | CH2 (PA25) |
 | 时钟 | ULPCLK ÷ 8 (4 MHz) |
 | 基准 | VREF 内部 2.5V |
-| 采样时间 | 125 μs |
+| 采样时间 | 12.5 μs |
+| 触发方式 | 软件触发 (TIMER_2 ISR → startConversion) |
 | 中断 | MEM0_RESULT_LOADED |
 
 ### DAC12

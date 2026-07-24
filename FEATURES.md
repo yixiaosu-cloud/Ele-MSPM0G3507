@@ -48,7 +48,10 @@ User/adc.h/c    — ADC12 采样读取
 |------|------|
 | `ADC_ReadRaw()` | 启动转换，阻塞等结果，返回 12 位原值 |
 | `ADC_Read_mV()` | 同 + 自动换算为毫伏 |
-| `ADC_Demo()` | 连续采样 10 次并打印 |
+| `ADC_CaptureStart(buf, n)` | 启动硬件触发批量采集 (n 个样本) |
+| `ADC_CaptureIsDone()` | 返回 1=采集完成 |
+| `ADC_Demo()` | 单次采样 10 点演示 |
+| `ADC_CaptureDemo()` | 批量采集 128 点演示，按 S2 触发 |
 
 ## 运行现象
 
@@ -57,19 +60,18 @@ User/adc.h/c    — ADC12 采样读取
 ```
 === MSPM0G3507 UART Debug ===
 PA10=TX, PA11=RX, 9600-8N1
---- DAC Demo ---
-VREF=2500mV, PA15=DAC_OUT
-DDS mode, 1Msps, any freq (0.0002Hz res)
-table[0..7]: 2047 2097 2147 2197 ...
-freq=1000Hz, inc=4294967
-DAC running...
---- DAC Demo End ---
 --- ADC Demo ---
 ADC0 CH2=PA25, VREF=2.5V
 Sampling 10x...
   0: raw=xxx -> xxxmV
   ...
 --- ADC Demo End ---
+--- ADC Capture Demo ---
+CAP_N=128, TIMER_2 trigger, press S2 to start
+Capture done, data[0..15]:
+  0: raw=xxx (xxxmV)
+  ...
+--- ADC Capture Demo End ---
 ```
 
 ### 外设现象
