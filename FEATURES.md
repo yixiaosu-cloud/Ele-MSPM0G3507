@@ -7,6 +7,7 @@ main.c          — 主循环入口 + TIMER_0 ISR (GREEN LED 闪烁)
 main.syscfg     — SysConfig 硬件配置
 User/uart.h/c   — UART0 串口调试（输出 + DMA TX + echo ISR）
 User/uart1.h/c  — UART1 串口驱动（输出 + DMA TX + RX callback ISR）
+User/spi.h/c    — SPI 主模式驱动（阻塞收发 + DMA 全双工）
 User/tjc_usart_hmi.h/c — 淘晶驰 TJC 串口屏驱动（命令累积 DMA 发送 + ringbuf 帧解析）
 User/app_screen.h/c — 串口屏应用逻辑（波形绘制、触摸事件回调）
 User/utils.h/c  — 基础工具（延时、按键消抖、DSP 演示）
@@ -52,6 +53,19 @@ User/adc.h/c    — ADC12 采样读取
 | `UART1_RX_setCallback(cb)` | 注册 RX 回调函数 (ISR 中调用) |
 
 RX ISR: 不再 echo，而是调用注册的回调将字节写入 tjc ringbuf。
+
+### spi — SPI 主模式驱动 (SPI0, PA12/PA13/PA14/PA2)
+
+| 函数 | 功能 |
+|------|------|
+| `SPI_Master_Transmit(buf, len)` | 阻塞发送 (忽略接收数据) |
+| `SPI_Master_Receive(buf, len)` | 阻塞接收 (发送 0x00 占位) |
+| `SPI_Master_TransmitReceive(txBuf, rxBuf, len)` | 阻塞全双工收发 |
+| `SPI_DMA_TransmitReceive(txBuf, rxBuf, len)` | DMA 非阻塞全双工收发 |
+| `SPI_DMA_isBusy()` | 返回 true=DMA 传输进行中 |
+| `SPI_DMA_waitDone()` | 阻塞等待 DMA 传输完成 |
+
+ISR: SPI_0_INST_IRQHandler，处理 DMA_DONE_TX / DMA_DONE_RX / TX_EMPTY 中断。
 
 ### tjc_usart_hmi — TJC 串口屏驱动 (UART1, PB6/PB7)
 
@@ -135,6 +149,7 @@ System boot, TJC screen on UART1
 | ADC IN (PA25) | 接被测电压 0~2.5V，串口打印采样值 |
 | UART0 (PA10/11) | 115200-8N1，DMA TX + RX echo ISR |
 | UART1 (PB6/7) | 115200-8N1，TJC 淘晶驰串口屏，DMA TX + RX ringbuf，主循环帧解析 |
+| SPI0 (PA12/13/14, PA2) | 500 kbps，MODE3，DMA CH2/CH3 全双工 |
 
 ## 修改维护
 

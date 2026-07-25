@@ -5,8 +5,12 @@
 | 引脚 | 外设 | 信号 | 说明 |
 |------|------|------|------|
 | PA0 | GPIO | LED1 | 红色 LED |
+| PA2 | SPI0 | CS0 | 片选 |
 | PA10 | UART0 | TX | 串口发送 → XDS110 虚拟串口 |
 | PA11 | UART0 | RX | 串口接收 ← XDS110 虚拟串口 |
+| PA12 | SPI0 | SCLK | 时钟 |
+| PA13 | SPI0 | MISO | 主入从出 |
+| PA14 | SPI0 | MOSI | 主出从入 |
 | PA15 | DAC0 | OUT | 模拟电压输出 |
 | PA19 | DEBUGSS | SWDIO | 调试数据线 |
 | PA20 | DEBUGSS | SWCLK | 调试时钟线 |
@@ -107,6 +111,23 @@
 |:---:|------|------|------|------|
 | DMA_CH0 | UART0 TX | BUF→FIFO (b2f) | 单次传输 | 串口调试 |
 | DMA_CH1 | UART1 TX | BUF→FIFO (b2f) | 单次传输 | 串口屏命令 |
+| DMA_CH2 | SPI0 TX | BUF→FIFO (b2f) | 单次传输 | SPI 发送 |
+| DMA_CH3 | SPI0 RX | FIFO→BUF (f2b) | 单次传输 | SPI 接收 |
+
+### SPI
+
+| 参数 | 值 |
+|------|-----|
+| 外设 | SPI0 |
+| 时钟 | BUSCLK |
+| 波特率 | 500000 |
+| 数据位 | 8 |
+| 模式 | CONTROLLER, CPOL=1, CPHA=1 (MODE3) |
+| CS | CS0 (PA2) 硬件控制 |
+| FIFO | 开启 (RX/TX: ONE_FRAME) |
+| TX DMA | DMA_CH2, Buffer→FIFO (b2f) |
+| RX DMA | DMA_CH3, FIFO→Buffer (f2b) |
+| 中断 | DMA_DONE_RX, DMA_DONE_TX, TX_EMPTY |
 
 ### VREF
 
